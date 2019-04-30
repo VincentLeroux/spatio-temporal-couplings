@@ -83,11 +83,11 @@ dx = (np.tan(beta0) - np.tan(beta)) * \
 
 # Import gratings deformation from h5 file
 g1 = {}
-with h5py.File('data/G1_deformation.h5', 'r') as f:
+with h5py.File('./data/G1_deformation_example.h5', 'r') as f:
     for key in list(f.keys()):
         g1[key] = f[key][...]
 g2 = {}
-with h5py.File('data/G2_deformation.h5', 'r') as f:
+with h5py.File('./data/G2_deformation_example.h5', 'r') as f:
     for key in list(f.keys()):
         g2[key] = f[key][...]
 
