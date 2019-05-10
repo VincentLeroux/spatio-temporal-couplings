@@ -4,6 +4,7 @@ from scipy.constants import c
 import h5py
 from scipy.interpolate import interp2d
 import grating_stc_functions as stc
+from grating_stc_import import import_h5_example_profile
 from time import time
 
 script_t0 = time()
@@ -81,15 +82,13 @@ dx = (np.tan(beta0) - np.tan(beta)) * \
 ################### Grating deformation ###################
 # Can be replaced by measured or simulated data
 
-# Import gratings deformation from h5 file
+# Import gratings deformation and put the data in a dictionary
 g1 = {}
-with h5py.File('./data/G1_deformation_example.h5', 'r') as f:
-    for key in list(f.keys()):
-        g1[key] = f[key][...]
 g2 = {}
-with h5py.File('./data/G2_deformation_example.h5', 'r') as f:
-    for key in list(f.keys()):
-        g2[key] = f[key][...]
+g1['data'], g1['x'], g1['y'] = import_h5_example_profile(
+    './data/G1_deformation_example.h5')
+g2['data'], g2['x'], g2['y'] = import_h5_example_profile(
+    './data/G2_deformation_example.h5')
 
 # Interpolate on the beam coordinates.
 g1_interp = interp2d(g1['x'] * np.cos(alpha), g1['y'],
