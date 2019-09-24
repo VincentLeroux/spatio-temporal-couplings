@@ -104,6 +104,22 @@ def grating_distance(beta, om, phi2, gd=1 / 1.48e6):
     '''
     return gd**2 * phi2 * (np.cos(beta) * om)**3 / (8 * np.pi**2 * c)
 
+def deformation_scaling(alpha, beta):
+	'''
+	Calculate the scaling factor that is needed to project the 
+	deformation profile of the grating to the plane of the 
+	wavefront
+
+	Parameters:
+	-----------
+	alpha: float
+        Input angle, in radians
+
+	beta: float, numpy.array
+        Diffracted angle, in radians
+	'''
+	return (1/np.cos(alpha) + 1/np.cos(beta))
+
 
 def divergence_from_phase(phase, x, k, hwhm, cut=0.5):
     '''

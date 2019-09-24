@@ -95,6 +95,8 @@ g1_interp = interp2d(g1['x'] * np.cos(alpha), g1['y'],
                      g1['data'], kind='cubic', fill_value=0)
 g2_interp = interp2d(g2['x'] * np.cos(alpha), g2['y'],
                      g2['data'], kind='cubic', fill_value=0)
+
+# Calculate deformation at each pass
 phi_pass1 = g1_interp(x, y + H1 / 2)
 phi_pass2 = np.zeros([Ny, Nx, Nom])
 phi_pass3 = np.zeros([Ny, Nx, Nom])
@@ -108,6 +110,9 @@ phi_pass4 = np.flipud(g1_interp(x, y - H1 / 2))
 phi_comp = phi_pass1[:, :, None] + phi_pass2 + \
     phi_pass3 + phi_pass4[:, :, None]
 
+# Project deformation to the wavefront plane
+phi_comp *= stc.deformation_scaling(alpha, beta)
+
 ################### Build Near field ###################
 
 E_nf = stc.gauss2D(x=X, y=Y, fwhmx=2 * w0, fwhmy=2 * w0, order=6)
@@ -116,6 +121,16 @@ E_om = stc.gauss1D(x=om, fwhm=Dom, x0=om0, order=1)
 # Spatio-spectral near field
 E_nf_om = E_nf[:, :, None] * E_om[None, None, :] * \
     np.exp(1j * k[None, None, :] * phi_comp)
+
+
+plt.imshow(np.sum(k[None, None, :] * phi_comp, axis=-1))
+plt.colorbar()
+plt.savefig('phase.png')
+plt.close()
+plt.imshow(np.sum(phi_comp, axis=-1))
+plt.colorbar()
+plt.savefig('phase2.png')
+plt.close()
 
 # Get GDD of the center of the beam
 phi2_nf, _, _ = stc.get_stc_coeff(E_nf_om, w0, om0, Dom / 2, x, om, level=0.5)
@@ -126,6 +141,7 @@ _, rad_curv_x, _, _ = stc.divergence_from_phase(
 _, rad_curv_y, _, _ = stc.divergence_from_phase(
     np.unwrap(np.angle(E_nf_om[:, Nx // 2, idx_om0])), y, k0, w0)
 rad_curv = (rad_curv_x + rad_curv_y) / 2
+
 
 # Remove GDD and curvature
 E_nf_om = E_nf_om * \
@@ -205,4 +221,5 @@ plt.ylabel('y (µm)')
 plt.title('X-Y')
 
 plt.tight_layout()
+plt.savefig('test.png', bbox_inches='tight')
 plt.show()
