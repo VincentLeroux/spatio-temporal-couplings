@@ -34,7 +34,7 @@ Lx = 0.3  # half horizontal box size, in m
 Ly = Lx  # half vertical box size, in m
 focal_length = 2  # Focal length, in m
 w0 = 0.035  # Laser near field waist, in m
-tau_chirped = 200e-12  # Chirped pulse duration
+tau_chirped = 200e-12  # Chirped pulse duration, in s
 
 
 ################### Compute remaining parameters ###################
@@ -42,17 +42,17 @@ tau_chirped = 200e-12  # Chirped pulse duration
 # Frequency axis
 om, om0, Dom, Nom, k0 = stc.build_omega_array(
     l0=l0, Nom=Nom, bandwidth=rel_bandwidth, omega_span=freq_axis_span)
-tau_0 = 4 * np.log(2) / Dom  # Fourier limited pulse duration, in s
+tau_0 = 4 * np.log(2) / Dom  # Fourier limited pulse duration for Gaussian shape, in s
 phi2 = -tau_chirped / Dom  # GDD to compensate
 
 # Get diffracted angles axis and remove imaginary rays
-beta = stc.grating_formula(alpha, om, gr_spacing)  # Difracted angles, in rad
+beta = stc.grating_formula(alpha, om, gr_spacing)  # Diffracted angles, in rad
 om = om[np.isfinite(beta)]  # Remove imaginary rays
 k = om / c  # Wave vector amplitude, in rad/m
 Nom = om.size  # Size of frequency axis, without imaginary rays
 beta = beta[np.isfinite(beta)]  # Remove imaginary rays
 beta0 = stc.grating_formula(alpha, om0, gr_spacing)  # Angle chief ray
-idx_om0 = np.argmin(np.abs(om - om0))
+idx_om0 = np.argmin(np.abs(om - om0)) # index of central frequency
 
 # Time axis (for Fourier transform)
 dt = 1 / np.ptp(om / 2 / np.pi)  # Spacing time axis, in s
@@ -104,7 +104,7 @@ for idx in np.arange(Nom):
     phi_pass2[:, :, idx] = g2_interp(x + dx[idx], y + H1 / 2)
     phi_pass3[:, :, idx] = np.flipud(g2_interp(x + dx[idx], y - H1 / 2))
 phi_pass4 = np.flipud(g1_interp(x, y - H1 / 2))
-# 3rd and 4th passes are flipped by the roof mirror
+# 3rd and 4th passes are flipped (up-down) by the roof mirror
 
 # Total wavefront accumulated from the compressor
 phi_comp = phi_pass1[:, :, None] + phi_pass2 + \
@@ -115,27 +115,17 @@ phi_comp *= stc.deformation_scaling(alpha, beta)
 
 ################### Build Near field ###################
 
-E_nf = stc.gauss2D(x=X, y=Y, fwhmx=2 * w0, fwhmy=2 * w0, order=6)
-E_om = stc.gauss1D(x=om, fwhm=Dom, x0=om0, order=1)
+E_nf = stc.gauss2D(x=X, y=Y, fwhmx=2 * w0, fwhmy=2 * w0, order=6) # Super-Gaussian spatial near E-field
+E_om = stc.gauss1D(x=om, fwhm=Dom, x0=om0, order=1) # Gaussian spectral near E-field
 
-# Spatio-spectral near field
+# Spatio-spectral near field with phase
 E_nf_om = E_nf[:, :, None] * E_om[None, None, :] * \
     np.exp(1j * k[None, None, :] * phi_comp)
-
-
-plt.imshow(np.sum(k[None, None, :] * phi_comp, axis=-1))
-plt.colorbar()
-plt.savefig('phase.png')
-plt.close()
-plt.imshow(np.sum(phi_comp, axis=-1))
-plt.colorbar()
-plt.savefig('phase2.png')
-plt.close()
 
 # Get GDD of the center of the beam
 phi2_nf, _, _ = stc.get_stc_coeff(E_nf_om, w0, om0, Dom / 2, x, om, level=0.5)
 
-# Get curvature of central wavelength
+# Get curvature (divergence) of central wavelength
 _, rad_curv_x, _, _ = stc.divergence_from_phase(
     np.unwrap(np.angle(E_nf_om[Ny // 2, :, idx_om0])), x, k0, w0)
 _, rad_curv_y, _, _ = stc.divergence_from_phase(
@@ -143,7 +133,7 @@ _, rad_curv_y, _, _ = stc.divergence_from_phase(
 rad_curv = (rad_curv_x + rad_curv_y) / 2
 
 
-# Remove GDD and curvature
+# Remove GDD and curvature for propagation
 E_nf_om = E_nf_om * \
     np.exp(1j * phi2_nf / 2 * (om - om0)**2)[None, None, :] * \
     np.exp(1j * k[None, None, :] / (2 * rad_curv) * R[:, :, None]**2)
@@ -221,5 +211,5 @@ plt.ylabel('y (µm)')
 plt.title('X-Y')
 
 plt.tight_layout()
-plt.savefig('test.png', bbox_inches='tight')
+# plt.savefig('STC_example.png', bbox_inches='tight')
 plt.show()
