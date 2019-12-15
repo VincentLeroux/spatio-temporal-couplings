@@ -211,5 +211,5 @@ plt.ylabel('y (µm)')
 plt.title('X-Y')
 
 plt.tight_layout()
-# plt.savefig('STC_example.png', bbox_inches='tight')
+plt.savefig('beam_profiles.png', bbox_inches='tight')
 plt.show()
