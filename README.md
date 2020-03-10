@@ -10,3 +10,6 @@ To run it, just clone or copy the repository (3 .py files, and the data folder w
   * 'x': x axis, in m
   * 'y': y axis, in m
   * 'data': deformation map, in m
+
+
+  If you use the code, please consider to cite the following reference: [V. Leroux et al., Opt. Express 28, 8257-8265 (2020)](https://doi.org/10.1364/OE.386112)
