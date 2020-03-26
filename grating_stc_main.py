@@ -164,7 +164,7 @@ _, _, wx, wy = stc.get_moments(np.sum(I_ff_t, axis=-1))
 pft_ff = stc.get_pft(E_ff_t, xf, t, level=0.5)
 # GDD, Spatial chirp, angular chirp
 phi2_ff, zeta_ff, beta_ff = stc.get_stc_coeff(
-    E_ff_om, wx, om0, Dom / 2, xf, om, level=0.5)
+    E_ff_om, wx, om0, Dom / 2, xf, om, level=0.01)
 # Waist in m
 wx *= dxf
 wy *= dyf

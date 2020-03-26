@@ -251,7 +251,7 @@ def gauss1D(x, fwhm, x0=0, offset=0, order=1, int_FWHM=True):
     return gauss
 
 
-def get_stc_coeff(E_field_xyom, w0, om0, Dom, x, om, level=0.5):
+def get_stc_coeff(E_field_xyom, w0, om0, Dom, x, om, level=0.01):
     '''
     Calculate first order STC coefficients and temporal chirp
 
